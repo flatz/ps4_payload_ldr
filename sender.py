@@ -6,12 +6,6 @@ import argparse
 import atexit
 import re
 
-def align_up(x, alignment):
-	return (x + (alignment - 1)) & ~(alignment - 1)
-
-def align_down(x, alignment):
-	return x & ~(alignment - 1)
-
 def check_file_magic(f, expected_magic):
 	old_offset = f.tell()
 	try:
@@ -22,15 +16,14 @@ def check_file_magic(f, expected_magic):
 		f.seek(old_offset)
 	return magic == expected_magic
 
-def parse_net_address(address):
-	matches = re.match('^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\:([0-9]{1,5})$', address)
+def parse_host_address(address):
+	matches = re.match('^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$', address)
 	if matches is None:
 		return None
 
 	host = '{0}.{1}.{2}.{3}'.format(int(matches.group(1), 10), int(matches.group(2), 10), int(matches.group(3), 10), int(matches.group(4), 10))
-	port = int(matches.group(5), 10)
 
-	return (host, port)
+	return host
 
 class ElfProgramHeader64(object):
 	FMT = '<2I6Q'
@@ -190,7 +183,7 @@ class ElfFile64(object):
 		return True
 
 def endpoint_type(val):
-	address = parse_net_address(val.strip())
+	address = parse_host_address(val.strip())
 	if address is None:
 		raise argparse.ArgumentTypeError('invalid endpoint address: {0}'.format(val))
 	return address
@@ -214,9 +207,10 @@ FLAG_NEED_ROOT   = (1 << 2)
 FLAG_NEED_UNJAIL = (1 << 3)
 
 MAX_PATH_LENGTH = 256
+PORT = 1480
 
 parser = MyParser(description='payload sender')
-parser.add_argument('--endpoint', type=endpoint_type, help='ldr address & port')
+parser.add_argument('--endpoint', type=endpoint_type, help='ldr address')
 parser.add_argument('--dont-stop', action='store_true', default=False, help='don\'t stop server after loading')
 parser.add_argument('--root', action='store_true', default=False, help='perform rooting')
 parser.add_argument('--unjail', action='store_true', default=False, help='perform jailbreak')
@@ -235,8 +229,8 @@ if not os.path.isfile(elf_file_path):
 	parser.error('invalid elf file: {0}'.format(elf_file_path))
 
 if args.endpoint is None:
-	parser.error('payload ldr address should be specified')
-endpoint_host, endpoint_port = args.endpoint
+	parser.error('ldr address should be specified')
+endpoint_host, endpoint_port = args.endpoint, PORT
 
 print('checking file format: {0}'.format(elf_file_path))
 with open(elf_file_path, 'rb') as f:
