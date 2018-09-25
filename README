@@ -1,1 +1,13 @@
-Payload loader via network
+(f)SELF loader via server (fPKG application)
+
+Prerequisites:
+	Kernel payload changes & ShellCore patches:
+		https://gist.github.com/flatz/f510bc6647a33cef1532c65c7881f32d
+
+	SDK (oouch! need to move to open source SDK in the future...)
+	Publishing tools with fPKG patches
+
+	Linux & Wine (I'm building it on trueOS but it could be backported to Windows)
+
+Notices:
+	Jailbreaking/rooting requires custom syscall which does that (see jailbreak.c).
