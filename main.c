@@ -7,6 +7,11 @@
 
 #define SERVER_TCP_PORT (1480)
 
+int sceUserMainThreadPriority = SCE_KERNEL_PRIO_FIFO_DEFAULT;
+
+size_t sceUserMainThreadStackSize = 512 * 1024;
+size_t sceLibcHeapSize = 256 * 1024 * 1024;
+
 int main(int argc, const char* const argv[]) {
 	int ret;
 
